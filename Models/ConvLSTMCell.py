@@ -29,12 +29,14 @@ class ConvLSTMCell(nn.Module):
 
     def forward(self, input, hidden_state, cell_state):
         
-        # previous hidden state concatonates input and feef in to conv
+        # previous hidden state concatonates input and feed in to conv
         conv_output = self.conv_layer(torch.cat([input, hidden_state], dim=1))
         
+        # split the out put to different chunks
         input_conv, forget_conv, cell_conv, output_conv = torch.chunk(conv_output, chunks=4, dim=1)
 
-        input_gate = torch.sigmoid(input_conv + self.input_weight + cell_state)
+        # intput * cell 
+        input_gate = torch.sigmoid(input_conv + self.input_weight * cell_state)
 
         forget_gate = torch.sigmoid(forget_conv + self.forget_weight * cell_state)
 
@@ -53,12 +55,13 @@ if __name__ == "__main__":
     datas = numpy.load(data_path)
     datas = rearrange(datas, 'f b w h -> b f w h')
 
-    dataset = MovingMNISTDataset(root_dir=data_path, transform=transforms.Compose([
-                                                                            transforms.ToTensor()
-                                                                    ]),)
+    dataset = MovingMNISTDataset(root_dir=data_path,
+                                transform=transforms.Compose([
+                                    transforms.ToTensor()
+                                    ]))
     loader =  DataLoader(dataset=dataset, batch_size=8, shuffle=True, num_workers=2)
     train, label = next(iter(loader))
-    print(train.shape)
+    print(train.shape, label.shape)
 
     # for data in datas:
     #     for frame in data:

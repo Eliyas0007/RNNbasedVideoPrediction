@@ -1,6 +1,6 @@
-import os
 import torch
 import numpy
+import torchvision.transforms as transforms
 
 from einops import rearrange
 from torch.utils.data import Dataset
@@ -11,29 +11,32 @@ class MovingMNISTDataset(Dataset):
         super().__init__()
 
         self.root_dir = root_dir
+        self.transform = transform
 
         assert (self.root_dir is not None or self.root_dir is not ''), "Root dir is empty"
         
         self.allvideos = numpy.load(self.root_dir)
-        self.allvideos = rearrange(self.allvideos, 'f b w h -> b f w h')
+        self.allvideos = numpy.array(rearrange(self.allvideos, 'f b w h -> b f w h'))
+        self.allvideos = torch.from_numpy(self.allvideos)
+
 
     def __len__(self):
         return len(self.allvideos)
 
     def __getitem__(self, index):
         
-        train_frames, label_frames = [], []
+        train_frames = torch.empty((10, 1, 64, 64))
+        label_frames = torch.empty((10, 1, 64, 64))
+
         if len(self.allvideos) > 1:
             video = self.allvideos[index]
+
             for i, frame in enumerate(video):
                 if i < (len(video) // 2):
-                    # print('haha')
-                    train_frames.append(frame)
+                    frame = frame.unsqueeze(dim=0)
+                    train_frames[i] = frame
                 else:
-                    # print('sese')
-                    label_frames.append(frame)
+                    frame = frame.unsqueeze(dim=0)
+                    label_frames[i-10] = frame
 
-        train_frames = numpy.array(train_frames)
-        label_frames = numpy.array(label_frames)
-         
-        return torch.as_tensor(train_frames), torch.as_tensor(label_frames)
+        return train_frames, label_frames
