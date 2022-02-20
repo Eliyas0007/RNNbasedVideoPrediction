@@ -33,10 +33,10 @@ if __name__ == '__main__':
     data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
 
     dataset = MovingMNISTDataset(root_dir=data_path,
-                                # transform=transforms.Compose([
-                                #     transforms.ToTensor(),
-                                #     transforms.Normalize((0.5), (0.5))
-                                    # ])
+                                transform=transforms.Compose([
+                                    # transforms.ToTensor(),
+                                    transforms.Normalize((0.5), (0.5))
+                                    ])
                                 )
 
     loader =  DataLoader(dataset=dataset, batch_size=8, shuffle=True, num_workers=2)
@@ -44,5 +44,5 @@ if __name__ == '__main__':
     train, label = next(iter(loader))
     print(train.shape)
     # print(type(train))
-    # output = model(train[0][0].unsqueeze(dim=0).unsqueeze(dim=0))
-    # print(output.shape)
+    output = model(train[0])
+    print(output.shape)
