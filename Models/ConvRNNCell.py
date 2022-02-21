@@ -131,7 +131,7 @@ if __name__ == '__main__':
 
     train, label = next(iter(loader))
 
-    encoded_output, e_hidden_state = encoder_cell(train[0])
+    encoded_output, e_hidden_state = encoder_cell(train)
     decoded_output, d_hidden_state = decoder_cell(encoded_output)
     
     print(decoded_output.shape)
