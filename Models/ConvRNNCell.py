@@ -1,3 +1,5 @@
+import cv2
+import numpy
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
@@ -25,7 +27,10 @@ class ConvRNNEncoderCell(nn.Module):
             nn.ReLU(),
         )
 
-        self.hidden_layer = nn.Linear(54 * 54 + hidden_size, 54 * 54 + hidden_size)
+        self.hidden_layer = nn.Sequential(
+            nn.Linear(54 * 54 + hidden_size, 54 * 54 + hidden_size),
+            nn.Tanh()
+        )
 
         self.linear_layer = nn.Sequential(
             nn.Linear(54 * 54 + hidden_size, 1024),
@@ -47,10 +52,9 @@ class ConvRNNEncoderCell(nn.Module):
 
         x = torch.cat([x, hidden_state], dim=1)
 
-        x = self.hidden_layer(x)
-        hidden_state = nn.Tanh(x)
+        hidden_state = self.hidden_layer(x)
 
-        x = self.linear_layer(x)
+        x = self.linear_layer(hidden_state)
 
         return x, hidden_state
 
@@ -66,7 +70,10 @@ class ConvRNNDecoderCell(nn.Module):
 
         self.hidden_size = hidden_size
 
-        self.hidden_layer = nn.Linear(128 + hidden_size, 128 + hidden_size)
+        self.hidden_layer = nn.Sequential(
+            nn.Linear(128 + hidden_size, 128 + hidden_size),
+            nn.Tanh()
+        )
 
         self.linear_expand_layer = nn.Sequential(
             nn.Linear(128 + hidden_size, 512),
@@ -93,10 +100,10 @@ class ConvRNNDecoderCell(nn.Module):
 
         x = torch.cat([x, hidden_state], dim=1)
 
-        x = self.hidden_layer(x)
-        hidden_state = nn.Tanh(x)
+        hidden_state = self.hidden_layer(x)
+        # hidden_state = nn.Tanh(x)
 
-        x = self.linear_expand_layer(x)
+        x = self.linear_expand_layer(hidden_state)
         x = rearrange(x, 'b (h w) -> b h w', h=54)
         x = x.unsqueeze(dim=1)
 
@@ -124,6 +131,7 @@ if __name__ == '__main__':
 
     train, label = next(iter(loader))
 
-    encoded_output = encoder_cell(train[0])
-    decoded_output = decoder_cell(encoded_output)
-    print(encoded_output.shape)
+    encoded_output, e_hidden_state = encoder_cell(train[0])
+    decoded_output, d_hidden_state = decoder_cell(encoded_output)
+    
+    print(decoded_output.shape)
