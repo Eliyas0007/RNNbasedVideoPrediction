@@ -37,7 +37,7 @@ class Seq2Seq(nn.Module):
 
                 if decoder_hidden_state is None:
                     decoder_hidden_state = self.decoder_init_hidden_state
-                image, _ = self.decoder(latent_vector, decoder_hidden_state)
+                image, decoder_hidden_state = self.decoder(latent_vector, decoder_hidden_state)
                 predicted_frames[i][j] = image
 
         return predicted_frames
