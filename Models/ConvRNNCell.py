@@ -112,8 +112,6 @@ if __name__ == '__main__':
     encoder_cell = ConvRNNEncoderCell(hidden_size=54 * 54)
     decoder_cell = ConvRNNDecoderCell()
 
-
-
     data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
 
     dataset = MovingMNISTDataset(root_dir=data_path,
