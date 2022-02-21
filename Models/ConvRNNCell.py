@@ -3,6 +3,7 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 
 from torch.utils.data import DataLoader
+from einops import rearrange
 
 
 import sys
@@ -12,7 +13,9 @@ from DataLoader.MovingMnistDataset import MovingMNISTDataset
 class ConvRNNEncoderCell(nn.Module):
 
     def __init__(self, hidden_size=512):
+
         super(ConvRNNEncoderCell, self).__init__()
+
         self.conv_layer = nn.Sequential(
             nn.Conv2d(1, 3, 5),
             nn.ReLU(),
@@ -50,8 +53,10 @@ class ConvRNNEncoderCell(nn.Module):
 
 
 class ConvRNNDecoderCell(nn.Module):
+
     def __init__(self, hidden_size=128):
-        super(ConvRNNDecoderCell).__init__()
+
+        super(ConvRNNDecoderCell, self).__init__()
 
         self.hidden_size = hidden_size
 
@@ -64,10 +69,27 @@ class ConvRNNDecoderCell(nn.Module):
         )
 
         self.conv_expand_layer = nn.Sequential(
-            
+            nn.ConvTranspose2d(1, 3, 3),
+            nn.ReLU(),
+            nn.ConvTranspose2d(3, 3, 5),
+            nn.ReLU(),
+            nn.ConvTranspose2d(3, 1, 5),
+            nn.ReLU(),
         )
 
-    def forward(self, x, hidden_state):
+    def forward(self, x, hidden_state=None):
+
+        if hidden_state is None:
+            batch_size, latent_size = x.shape
+            hidden_state = torch.zeros(batch_size, latent_size)
+
+        x = torch.cat([x, hidden_state], dim=1)
+
+        x = self.linear_expand_layer(x)
+        x = rearrange(x, 'b (h w) -> b h w', h=54)
+        x = x.unsqueeze(dim=1)
+
+        x = self.conv_expand_layer(x)
 
         return x, hidden_state
 
@@ -76,7 +98,11 @@ class ConvRNNDecoderCell(nn.Module):
 
 if __name__ == '__main__':
 
-    model = ConvRNNEncoderCell(hidden_size=54 * 54)
+    encoder_cell = ConvRNNEncoderCell(hidden_size=54 * 54)
+    decoder_cell = ConvRNNDecoderCell()
+
+
+
     data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
 
     dataset = MovingMNISTDataset(root_dir=data_path,
@@ -90,5 +116,6 @@ if __name__ == '__main__':
 
     train, label = next(iter(loader))
 
-    output = model(train[0])
-    # print(output)
+    encoded_output = encoder_cell(train[0])
+    decoded_output = decoder_cell(encoded_output)
+    print(encoded_output.shape)
