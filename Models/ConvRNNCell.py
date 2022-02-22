@@ -28,12 +28,12 @@ class ConvRNNEncoderCell(nn.Module):
         )
 
         self.hidden_layer = nn.Sequential(
-            nn.Linear(54 * 54 + hidden_size, 54 * 54 + hidden_size),
+            nn.Linear(54 * 54 + hidden_size, hidden_size),
             nn.Tanh()
         )
 
         self.linear_layer = nn.Sequential(
-            nn.Linear(54 * 54 + hidden_size, 1024),
+            nn.Linear(hidden_size, 1024),
             nn.ReLU(),
             nn.Linear(1024, 512),
             nn.ReLU(),
@@ -41,15 +41,11 @@ class ConvRNNEncoderCell(nn.Module):
         )
 
     def forward(self, x, hidden_state=None):
-
-        
+        x = x.to('cuda')
+        x = x.unsqueeze(0)
         x = self.conv_layer(x)
         x = torch.flatten(x, start_dim=1)
-        batch_size, latent_size = x.shape
-
-        if hidden_state is None:
-            hidden_state = self.get_initial_hiddent_state(batch_size, latent_size)
-
+        
         x = torch.cat([x, hidden_state], dim=1)
 
         hidden_state = self.hidden_layer(x)
@@ -57,9 +53,6 @@ class ConvRNNEncoderCell(nn.Module):
         x = self.linear_layer(hidden_state)
 
         return x, hidden_state
-
-    def get_initial_hiddent_state(self, batch_size, latent_size):
-        return torch.zeros(batch_size, latent_size)
 
 
 class ConvRNNDecoderCell(nn.Module):
@@ -71,12 +64,12 @@ class ConvRNNDecoderCell(nn.Module):
         self.hidden_size = hidden_size
 
         self.hidden_layer = nn.Sequential(
-            nn.Linear(128 + hidden_size, 128 + hidden_size),
+            nn.Linear(128 + hidden_size, 128),
             nn.Tanh()
         )
 
         self.linear_expand_layer = nn.Sequential(
-            nn.Linear(128 + hidden_size, 512),
+            nn.Linear(128, 512),
             nn.ReLU(),
             nn.Linear(512, 1024),
             nn.ReLU(),
@@ -93,21 +86,16 @@ class ConvRNNDecoderCell(nn.Module):
         )
 
     def forward(self, x, hidden_state=None):
-
-        if hidden_state is None:
-            batch_size, latent_size = x.shape
-            hidden_state = torch.zeros(batch_size, latent_size)
-
+        x = x.to('cuda')
         x = torch.cat([x, hidden_state], dim=1)
-
         hidden_state = self.hidden_layer(x)
-        # hidden_state = nn.Tanh(x)
 
         x = self.linear_expand_layer(hidden_state)
         x = rearrange(x, 'b (h w) -> b h w', h=54)
         x = x.unsqueeze(dim=1)
 
         x = self.conv_expand_layer(x)
+        # print(x.shape, hidden_state.shape)
 
         return x, hidden_state
 
@@ -132,6 +120,7 @@ if __name__ == '__main__':
     train, label = next(iter(loader))
 
     encoded_output, e_hidden_state = encoder_cell(train)
-    decoded_output, d_hidden_state = decoder_cell(encoded_output)
+
+    # decoded_output, d_hidden_state = decoder_cell(encoded_output)
     
-    print(decoded_output.shape)
+    print(encoded_output.shape)
