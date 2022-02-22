@@ -21,7 +21,7 @@ model_save_path = './SavedModels/'
 # Hyperparameters
 num_epochs = 1
 
-learning_rate = 0.001
+learning_rate = 0.0001
 
 batch_size = 16
 
@@ -36,7 +36,7 @@ step = 0
 # models
 encoder_cell = ConvRNNEncoderCell(hidden_size=54 * 54)
 decoder_cell = ConvRNNDecoderCell()
-model = Seq2Seq(encoder_cell, decoder_cell, device).to(device)
+model = Seq2Seq(encoder_cell, decoder_cell, device, batch_size).to(device)
 
 # Optimizer
 optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -48,7 +48,7 @@ dataset = MovingMNISTDataset(root_dir=data_path,
                                     transforms.Normalize((0.5), (0.5))
                                     ])
                             )
-loader =  DataLoader(dataset=dataset, batch_size=8, shuffle=True, num_workers=2)
+loader =  DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=2)
 
 criterion = nn.CrossEntropyLoss()
 
@@ -58,7 +58,7 @@ if load_model:
 
 for epoch in range(num_epochs):
 
-    print(f'Epoch [{epoch} / {num_epochs}]')
+    print(f'Epoch [current: {epoch} / total: {num_epochs}]')
 
 
     with tqdm.tqdm(loader, unit='batch') as tepoch:
@@ -75,9 +75,9 @@ for epoch in range(num_epochs):
 
             nn.utils.clip_grad_norm_(model.parameters(), max_norm=1)
             optimizer.step()
-            # print(f'Training Loss : {loss.item()}')
-            writer.add_scalar('Training Loss', loss, global_step=step)
+            print(f'Training Loss : {loss.item()}')
+            writer.add_scalar('Training Loss', loss.item(), global_step=step)
 
-            # break
+            
 
     torch.save(model.state_dict(), model_save_path + f'epoch{epoch}.pth')

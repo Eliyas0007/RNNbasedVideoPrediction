@@ -3,7 +3,7 @@ import torch.nn as nn
 
 class Seq2Seq(nn.Module):
 
-    def __init__(self, encoder, decoder, device):
+    def __init__(self, encoder, decoder, device, batch_size):
         super(Seq2Seq, self).__init__()
 
         self.encoder = encoder
@@ -12,7 +12,7 @@ class Seq2Seq(nn.Module):
 
         self.decoder = decoder
         self.decoder = self.decoder.to(device)
-        self.decoder_init_hidden_state = torch.zeros(10, 128).to(device)
+        self.decoder_init_hidden_state = torch.zeros(batch_size, 128).to(device)
         
 
     def forward(self, source_videos, target_videos=None, teacher_force_ratio=0.5):
@@ -21,7 +21,7 @@ class Seq2Seq(nn.Module):
         encoder_hidden_state = None
         decoder_hidden_state = None
         latent_vector = None
-        latent_vector_batch = torch.empty(10, 128)
+        latent_vector_batch = torch.empty(batch_size, 128)
         predicted_frames = torch.empty(batch_size, sequence_len, channel, height, width)
 
         for i, video in enumerate(source_videos):
@@ -32,11 +32,12 @@ class Seq2Seq(nn.Module):
                 latent_vector, encoder_hidden_state = self.encoder(frame, encoder_hidden_state)
             latent_vector_batch[i] = latent_vector
 
-
-            for i in range(batch_size):
+            for i in range(sequence_len):
                 if decoder_hidden_state is None:
                     decoder_hidden_state = self.decoder_init_hidden_state
                 image, decoder_hidden_state = self.decoder(latent_vector_batch, decoder_hidden_state)
-                predicted_frames[i] = image
+                
+                for b in range(batch_size):
+                    predicted_frames[b][i] = image[b]          
 
         return predicted_frames

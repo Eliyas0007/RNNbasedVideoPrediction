@@ -93,7 +93,6 @@ class ConvRNNDecoderCell(nn.Module):
         x = x.unsqueeze(dim=1)
 
         x = self.conv_expand_layer(x)
-        # print(x.shape, hidden_state.shape)
 
         return x, hidden_state
 
