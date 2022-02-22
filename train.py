@@ -15,6 +15,9 @@ from DataLoader.MovingMnistDataset import MovingMNISTDataset
 from Models.Seq2Seq import Seq2Seq
 from Models.ConvRNNCell import ConvRNNEncoderCell, ConvRNNDecoderCell
 
+# save path for model
+model_save_path = './SavedModels/'
+
 # Hyperparameters
 num_epochs = 1
 
@@ -55,7 +58,8 @@ if load_model:
 
 for epoch in range(num_epochs):
 
-    print(f'Epoch [{epoch / num_epochs}]')
+    print(f'Epoch [{epoch} / {num_epochs}]')
+
 
     with tqdm.tqdm(loader, unit='batch') as tepoch:
         for data_pair in tepoch:
@@ -75,3 +79,5 @@ for epoch in range(num_epochs):
             writer.add_scalar('Training Loss', loss, global_step=step)
 
             # break
+
+    torch.save(model.state_dict(), model_save_path + f'epoch{epoch}.pth')

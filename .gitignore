@@ -8,6 +8,7 @@ __pycache__/
 
 # unnecessary folders
 runs/
+SavedModels/
 
 # Distribution / packaging
 .Python
