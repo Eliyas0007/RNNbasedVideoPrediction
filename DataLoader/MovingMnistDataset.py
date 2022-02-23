@@ -22,7 +22,7 @@ class MovingMNISTDataset(Dataset):
 
 
     def __len__(self):
-        video_len, frame_len, _, _ = self.allvideos
+        video_len, frame_len, _, _ = self.allvideos.shape
         if self.load_type is 'video':
             
             return video_len
@@ -39,7 +39,7 @@ class MovingMNISTDataset(Dataset):
                 video = self.allvideos[index]
 
                 for i, frame in enumerate(video):
-                    frame = self.transform(frame)
+                    # frame = self.transform(frame)
                     if i < (len(video) // 2):
                         frame = frame.unsqueeze(dim=0)
                         train_frames[i] = frame
