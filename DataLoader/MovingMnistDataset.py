@@ -14,6 +14,9 @@ class MovingMNISTDataset(Dataset):
         self.transform = transform
         self.load_type = load_type
 
+        if load_type is not 'vidio' and load_type is not 'image':
+            assert 'loading type not supported! only [video] or [image]'
+
         assert (self.root_dir is not None or self.root_dir is not ''), "Root dir is empty"
         
         self.allvideos = numpy.load(self.root_dir)
