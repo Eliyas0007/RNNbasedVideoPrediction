@@ -21,9 +21,9 @@ model_save_path = './SavedModels/'
 # Hyperparameters
 num_epochs = 1
 
-learning_rate = 0.0001
+learning_rate = 0.0002
 
-batch_size = 16
+batch_size = 32
 
 # Model Hyperparameters
 load_model = False
@@ -50,7 +50,7 @@ dataset = MovingMNISTDataset(root_dir=data_path,
                             )
 loader =  DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True, num_workers=2)
 
-criterion = nn.CrossEntropyLoss()
+criterion = nn.BCELoss()
 
 if load_model:
     # TODO 
@@ -70,14 +70,15 @@ for epoch in range(num_epochs):
             predicted_frames = model(train)
 
             optimizer.zero_grad()
-            loss = criterion(predicted_frames.to(device), target)
+            loss = criterion(predicted_frames.to(device), train)
             loss.backward()
 
             nn.utils.clip_grad_norm_(model.parameters(), max_norm=1)
             optimizer.step()
             print(f'Training Loss : {loss.item()}')
+
+            if step % 25 == 0:
+                torch.save(model.state_dict(), model_save_path + f'step{step}.pth')
+
             writer.add_scalar('Training Loss', loss.item(), global_step=step)
-
-            
-
-    torch.save(model.state_dict(), model_save_path + f'epoch{epoch}.pth')
+            step += 1

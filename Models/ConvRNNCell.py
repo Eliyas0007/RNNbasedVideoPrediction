@@ -18,23 +18,27 @@ class ConvRNNEncoderCell(nn.Module):
 
         self.conv_layer = nn.Sequential(
             nn.Conv2d(1, 3, 5),
-            nn.ReLU(),
+            nn.GELU(),
+            nn.BatchNorm2d(3),
             nn.Conv2d(3, 3, 5),
-            nn.ReLU(),
-            nn.Conv2d(3, 1, 3),
-            nn.ReLU(),
+            nn.GELU(),
+            nn.BatchNorm2d(3),
+            nn.Conv2d(3, 1, 5),
+            nn.GELU(),
+            nn.BatchNorm2d(1)
+
         )
 
         self.hidden_layer = nn.Sequential(
-            nn.Linear(54 * 54 + hidden_size, hidden_size),
+            nn.Linear(52 * 52 + hidden_size, hidden_size),
             nn.Tanh()
         )
 
         self.linear_layer = nn.Sequential(
             nn.Linear(hidden_size, 1024),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Linear(1024, 512),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Linear(512, 128)
         )
 
@@ -42,6 +46,7 @@ class ConvRNNEncoderCell(nn.Module):
         x = x.to('cuda')
         x = x.unsqueeze(0)
         x = self.conv_layer(x)
+        # print(x.shape)
         x = torch.flatten(x, start_dim=1)
         
         x = torch.cat([x, hidden_state], dim=1)
@@ -68,19 +73,21 @@ class ConvRNNDecoderCell(nn.Module):
 
         self.linear_expand_layer = nn.Sequential(
             nn.Linear(128, 512),
-            nn.ReLU(),
+            nn.GELU(),
             nn.Linear(512, 1024),
-            nn.ReLU(),
-            nn.Linear(1024, 54 * 54)
+            nn.GELU(),
+            nn.Linear(1024, 52 * 52)
         )
 
         self.conv_expand_layer = nn.Sequential(
-            nn.ConvTranspose2d(1, 3, 3),
-            nn.ReLU(),
+            nn.ConvTranspose2d(1, 3, 5),
+            nn.GELU(),
+            nn.BatchNorm2d(3),
             nn.ConvTranspose2d(3, 3, 5),
-            nn.ReLU(),
+            nn.GELU(),
+            nn.BatchNorm2d(3),
             nn.ConvTranspose2d(3, 1, 5),
-            nn.ReLU(),
+            nn.Softmax2d()
         )
 
     def forward(self, x, hidden_state=None):
@@ -89,7 +96,8 @@ class ConvRNNDecoderCell(nn.Module):
         hidden_state = self.hidden_layer(x)
 
         x = self.linear_expand_layer(hidden_state)
-        x = rearrange(x, 'b (h w) -> b h w', h=54)
+        # print(x.shape)
+        x = rearrange(x, 'b (h w) -> b h w', h=52)
         x = x.unsqueeze(dim=1)
 
         x = self.conv_expand_layer(x)
