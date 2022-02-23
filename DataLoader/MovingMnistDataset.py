@@ -7,11 +7,12 @@ from torch.utils.data import Dataset
 
 class MovingMNISTDataset(Dataset):
     
-    def __init__(self, root_dir, transform=None):
+    def __init__(self, root_dir, load_type='video', transform=None):
         super().__init__()
 
         self.root_dir = root_dir
         self.transform = transform
+        self.load_type = load_type
 
         assert (self.root_dir is not None or self.root_dir is not ''), "Root dir is empty"
         
@@ -32,11 +33,13 @@ class MovingMNISTDataset(Dataset):
             video = self.allvideos[index]
 
             for i, frame in enumerate(video):
+                frame = self.transform(frame)
                 if i < (len(video) // 2):
                     frame = frame.unsqueeze(dim=0)
                     train_frames[i] = frame
                 else:
                     frame = frame.unsqueeze(dim=0)
                     label_frames[i-10] = frame
+
 
         return train_frames, label_frames

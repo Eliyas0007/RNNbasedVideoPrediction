@@ -4,8 +4,10 @@ In this repo we have 3 models for simple video prediction using basic recurrent 
 
 ### TYPES
 
-- RNN + Conv2d (Almost done)
-in this model, we firstly compress an image to a 2d latent vector using CNN and use RNN to predict next 10 frames
+- RNNs(Vanilla-RNN, LSTM, GRU) + Conv2d (done, but won't work)
 
-- LSTM + Conv2d
-- GRU + Conv2d
+In this model, we firstly compress an image to a 2d latent vector using CNN and use RNN to predict next 10 frames
+
+- Vanilla VAE + RNNs
+
+In this model, we use VEA to encode 2d image into 1d latent vector, then use the latent vector to feed RNN to predic next n frames.

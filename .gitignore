@@ -11,7 +11,7 @@ runs/
 SavedModels/
 
 # Submodules
-PyTorch-VAE/
+VAE/
 
 # Distribution / packaging
 .Python
