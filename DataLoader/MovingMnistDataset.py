@@ -22,24 +22,34 @@ class MovingMNISTDataset(Dataset):
 
 
     def __len__(self):
-        return len(self.allvideos)
+        video_len, frame_len, _, _ = self.allvideos
+        if self.load_type is 'video':
+            
+            return video_len
+        else:
+            return video_len * frame_len
 
     def __getitem__(self, index):
         
-        train_frames = torch.empty((10, 1, 64, 64))
-        label_frames = torch.empty((10, 1, 64, 64))
+        if self.load_type is 'video':
+            train_frames = torch.empty((10, 1, 64, 64))
+            label_frames = torch.empty((10, 1, 64, 64))
 
-        if len(self.allvideos) > 1:
-            video = self.allvideos[index]
+            if len(self.allvideos) > 1:
+                video = self.allvideos[index]
 
-            for i, frame in enumerate(video):
-                frame = self.transform(frame)
-                if i < (len(video) // 2):
-                    frame = frame.unsqueeze(dim=0)
-                    train_frames[i] = frame
-                else:
-                    frame = frame.unsqueeze(dim=0)
-                    label_frames[i-10] = frame
+                for i, frame in enumerate(video):
+                    frame = self.transform(frame)
+                    if i < (len(video) // 2):
+                        frame = frame.unsqueeze(dim=0)
+                        train_frames[i] = frame
+                    else:
+                        frame = frame.unsqueeze(dim=0)
+                        label_frames[i-10] = frame
 
 
-        return train_frames, label_frames
+            return train_frames, label_frames
+        else:
+            all_videos = rearrange(self.allvideos, 'b f h w -> (b f) h w')
+            all_videos = all_videos.unsqueeze(dim=1)
+            return all_videos[index], all_videos[index]

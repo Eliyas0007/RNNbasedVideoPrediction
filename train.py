@@ -43,7 +43,7 @@ optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
 
-dataset = MovingMNISTDataset(root_dir=data_path,
+dataset = MovingMNISTDataset(root_dir=data_path, load_type='video',
                                 transform=transforms.Compose([
                                     transforms.Normalize((0.5), (0.5))
                                     ])
