@@ -12,9 +12,11 @@ from DataLoader.MovingMnistDataset import MovingMNISTDataset
 
 class ConvRNNEncoderCell(nn.Module):
 
-    def __init__(self, hidden_size=512):
+    def __init__(self, hidden_size=512, device='cpu'):
 
         super(ConvRNNEncoderCell, self).__init__()
+
+        self.device = device
 
         self.conv_layer = nn.Sequential(
             nn.Conv2d(1, 3, 5),
@@ -43,10 +45,10 @@ class ConvRNNEncoderCell(nn.Module):
         )
 
     def forward(self, x, hidden_state=None):
-        x = x.to('cuda')
+        x = x.to(self.device)
         x = x.unsqueeze(0)
         x = self.conv_layer(x)
-        # print(x.shape)
+
         x = torch.flatten(x, start_dim=1)
         
         x = torch.cat([x, hidden_state], dim=1)
@@ -60,11 +62,12 @@ class ConvRNNEncoderCell(nn.Module):
 
 class ConvRNNDecoderCell(nn.Module):
 
-    def __init__(self, hidden_size=128):
+    def __init__(self, hidden_size=128, device='cpu'):
 
         super(ConvRNNDecoderCell, self).__init__()
 
         self.hidden_size = hidden_size
+        self.device = device
 
         self.hidden_layer = nn.Sequential(
             nn.Linear(128 + hidden_size, 128),
@@ -91,12 +94,12 @@ class ConvRNNDecoderCell(nn.Module):
         )
 
     def forward(self, x, hidden_state=None):
-        x = x.to('cuda')
+        x = x.to(self.device)
         x = torch.cat([x, hidden_state], dim=1)
         hidden_state = self.hidden_layer(x)
 
         x = self.linear_expand_layer(hidden_state)
-        # print(x.shape)
+
         x = rearrange(x, 'b (h w) -> b h w', h=52)
         x = x.unsqueeze(dim=1)
 

@@ -21,9 +21,9 @@ model_save_path = './SavedModels/'
 # Hyperparameters
 num_epochs = 1
 
-learning_rate = 0.0002
+learning_rate = 0.0001
 
-batch_size = 8
+batch_size = 16
 
 # Model Hyperparameters
 load_model = False
@@ -34,8 +34,8 @@ writer = SummaryWriter(f'runs/')
 step = 0
 
 # models
-encoder_cell = ConvRNNEncoderCell(hidden_size=54 * 54)
-decoder_cell = ConvRNNDecoderCell()
+encoder_cell = ConvRNNEncoderCell(hidden_size=54 * 54, device=device)
+decoder_cell = ConvRNNDecoderCell(device=device)
 model = Seq2Seq(encoder_cell, decoder_cell, device, batch_size).to(device)
 
 # Optimizer

@@ -15,7 +15,7 @@ class Seq2Seq(nn.Module):
         self.decoder_init_hidden_state = torch.zeros(batch_size, 128).to(device)
         
 
-    def forward(self, source_videos, target_videos=None, teacher_force_ratio=0.5):
+    def forward(self, source_videos):
         
         batch_size, sequence_len, channel, height, width = source_videos.shape
         encoder_hidden_state = None
