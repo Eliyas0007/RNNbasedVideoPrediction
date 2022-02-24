@@ -8,10 +8,11 @@ __pycache__/
 
 # unnecessary folders
 runs/
+vae_runs/
 SavedModels/
 
 # Submodules
-VAE/
+PytorchVAE/
 
 # Distribution / packaging
 .Python

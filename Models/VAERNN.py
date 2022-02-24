@@ -1,16 +1,18 @@
+import cv2
 import torch
 import torch.nn as nn
 
-import sys
-sys.path.append(".")
-from VAE import models
+from einops import rearrange
 
+import sys
+sys.path.append("/home/yiliyasi/Documents/Projects/RNNbasedVideoPrediction")
+
+from PytorchVAE.models.vanilla_vae import VanillaVAE
 
 class VEARNN(nn.Module):
 
     def __init__(self,  in_channels,
                         latent_size, # also input size for rnn layer
-                        hiddin_dims, # this is the depth of VAE
                         rnn_type='LSTM', 
                         hidden_size=512,
                         num_layer=1,
@@ -21,7 +23,7 @@ class VEARNN(nn.Module):
         super(VEARNN, self).__init__()
 
 
-        self.VAE_layer = VanillaVAE(in_channels, latent_size, hiddin_dims)
+        self.VAE_layer = VanillaVAE(in_channels, latent_size)
 
         if rnn_type is 'LSTM':
             self.rnn_layer = nn.LSTM(latent_size, hidden_size, num_layer, batch_first, bidirectional)
@@ -41,10 +43,16 @@ class VEARNN(nn.Module):
 
 if __name__ == '__main__':
     
-    model = VEARNN(1, 128, 3, )
+    model = VEARNN(1, 128)
 
-    image = torch.random(10, 1, 64, 64)
+    image = torch.rand(1, 1, 64, 64)
 
-    pred = model(image)
+    pred = model(image)[0][0].unsqueeze(0)
+    # pred = rearrange(pred, 'h w c -> c h w')
+
 
     print(pred.shape)
+    # print(type(pred.cpu().detach().numpy()))
+
+    # cv2.imwrite('hehe.png', pred.cpu().detach().numpy())
+
