@@ -1,6 +1,6 @@
 # RNN based Video Prediction
 
-In this repo we have 2 models for simple video prediction using basic recurrent networks, back bone is convolution and recurrent network. First models uses ConvLSTM cells and the other one uses a latent compressed by a VAE.
+In this repo we have 2 models for simple video prediction using recurrent networks.
 
 ### TYPES
 
