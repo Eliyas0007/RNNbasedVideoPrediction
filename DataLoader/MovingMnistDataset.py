@@ -1,3 +1,4 @@
+from email.mime import image
 import torch
 import numpy
 import torchvision.transforms as transforms
@@ -14,7 +15,7 @@ class MovingMNISTDataset(Dataset):
         self.transform = transform
         self.load_type = load_type
 
-        if load_type is not 'vidio' and load_type is not 'image':
+        if load_type != 'video' and load_type != 'image':
             assert 'loading type not supported! only [video] or [image]'
 
         assert (self.root_dir is not None or self.root_dir is not ''), "Root dir is empty"
@@ -27,7 +28,6 @@ class MovingMNISTDataset(Dataset):
     def __len__(self):
         video_len, frame_len, _, _ = self.allvideos.shape
         if self.load_type is 'video':
-            
             return video_len
         else:
             return video_len * frame_len
@@ -55,4 +55,6 @@ class MovingMNISTDataset(Dataset):
         else:
             all_videos = rearrange(self.allvideos, 'b f h w -> (b f) h w')
             all_videos = all_videos.unsqueeze(dim=1)
-            return all_videos[index], all_videos[index]
+            image = transforms.functional.convert_image_dtype(all_videos[index], dtype=torch.float32)
+            image = self.transform(image)
+            return image, image
