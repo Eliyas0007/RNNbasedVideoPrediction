@@ -37,7 +37,7 @@ class Decoder(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers, dropout=drop_out, batch_first=True)
         
 
-    def forwand(self, x, hidden, cell):
+    def forward(self, x, hidden, cell):
 
         x = x.unsqueeze(0)
         x = self.dropout(x)
@@ -48,11 +48,12 @@ class Decoder(nn.Module):
 
 class VAESeq2Seq(nn.Module):
 
-    def __init__(self, encoder, decoder):
+    def __init__(self, encoder, decoder, device):
         super(VAESeq2Seq, self).__init__()
 
-        self.encoder = encoder
-        self.decoder = decoder
+        self.encoder = encoder.to(device)
+        self.decoder = decoder.to(device)
+
 
 
     def forward(self, batch_of_encoded_videos): # shape of [batch_size, squence_len, latent_szie]
@@ -62,8 +63,8 @@ class VAESeq2Seq(nn.Module):
         batch_size, sequence_len, latent_size = batch_of_encoded_videos.shape
         predicted_latnets = torch.empty(batch_size, sequence_len, latent_size)
 
-        for batch in batch_size:
-            for t in sequence_len:
+        for batch in range(batch_size):
+            for t in range(sequence_len):
                 output, (hidden, cell) = self.decoder(hidden, cell)
                 predicted_latnets[batch][t] = output
                 
