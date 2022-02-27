@@ -11,6 +11,7 @@ import torchvision.transforms as transforms
 # from tensorboard import SummaryWriter
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
+from einops import rearrange
 
 from PytorchVAE.models.vanilla_vae import VanillaVAE
 from Models.VAESeq2Seq import VAESeq2Seq, Encoder, Decoder
@@ -56,7 +57,7 @@ seq2seq = VAESeq2Seq(encoder, decoder, device).to(device)
 optimizer = optim.Adam(seq2seq.parameters(), lr=learning_rate)
 
 # Loss function
-criterion = nn.MSELoss()
+criterion = nn.CrossEntropyLoss()
 
 # Data loading
 print('Loading Data')
@@ -105,24 +106,23 @@ for epoch in range(num_epochs):
                     encoded_train[b][f] = latent_tr
                     encoded_target[b][f] = latent_ta
 
+            encoded_train = rearrange(encoded_train, 'b f l -> f b l')
+            encoded_target = rearrange(encoded_target, 'b f l -> f b l')
+
             pred = seq2seq(encoded_train)
 
-            break
-            
-            # predicted_frames = seq2seq(train)
+            optimizer.zero_grad()
 
-            # print(predicted_frames[0].shape)
-            # optimizer.zero_grad()
+            loss = criterion(pred.to(device), encoded_target)
+            loss.backward()
 
-            # loss = criterion(predicted_frames[0].to(device), train)
-            # loss.backward()
-
-            # nn.utils.clip_grad_norm_(seq2seq.parameters(), max_norm=1)
-            # optimizer.step()
+            nn.utils.clip_grad_norm_(seq2seq.parameters(), max_norm=1)
+            optimizer.step()
             # print(f'Training Loss : {loss.item()}')
 
-            # if step % 100 == 0:
-            #     torch.save(seq2seq.state_dict(), model_save_path + f'vaelstm_step{step}.pth')
+            if step % 100 == 0:
+                torch.save(seq2seq.state_dict(), model_save_path + f'vaelstm_step{step}.pth')
 
-            # writer.add_scalar('Training Loss', loss.item(), global_step=step)
-            # step += 1
+            writer.add_scalar('Training Loss', loss.item(), global_step=step)
+            step += 1
+            # break
