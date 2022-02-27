@@ -1,4 +1,4 @@
-# RNN based Video Prediction
+# RNN based Video Prediction (Unfinished Project)
 
 In this repo we have 2 models for simple video prediction using recurrent networks.
 
