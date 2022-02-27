@@ -24,11 +24,11 @@ print('Initializing...')
 model_save_path = './SavedModels/'
 
 # Hyperparameters
-num_epochs = 1
+num_epochs = 50
 
-learning_rate = 0.0002
+learning_rate = 0.001
 
-batch_size = 32
+batch_size = 64
 
 # General settings
 load_model = False
@@ -46,7 +46,7 @@ vae = vae.to(device)
 
 # Seq2Seq model and hype parameters
 input_size = latent_size
-hidden_size = 512
+hidden_size = 1024
 num_layers = 2
 dropout = 0.5
 encoder = Encoder(input_size, hidden_size, num_layers, dropout)
@@ -57,7 +57,7 @@ seq2seq = VAESeq2Seq(encoder, decoder, device).to(device)
 optimizer = optim.Adam(seq2seq.parameters(), lr=learning_rate)
 
 # Loss function
-criterion = nn.CrossEntropyLoss()
+criterion = nn.MSELoss()
 
 # Data loading
 print('Loading Data')
