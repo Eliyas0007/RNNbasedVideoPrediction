@@ -20,3 +20,11 @@ In this model, we firstly compress an image to a 2d latent vector using CNN and 
 #### Vanilla VAE + RNNs
 
 In this model, we use VEA to encode 2d image into 1d latent vector, then use the latent vector to feed RNN to predic next n frames.
+
+**Tested**
+
+- Vanilla VAE is trained using moving mnist and it is able to generate good quality images
+
+**Implementing**
+
+- VAE + LSTM
