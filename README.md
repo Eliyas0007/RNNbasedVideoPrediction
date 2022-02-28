@@ -11,13 +11,15 @@ In this repo we have 2 models for simple video prediction using recurrent networ
 
 ## Dataset
 ### Moving-Mnist Dataset
-![Alt Text](http://www.cs.toronto.edu/~nitish/unsupervised_video/images/000001.gif)
+<p align="center">
+    <img width="200" src="http://www.cs.toronto.edu/~nitish/unsupervised_video/images/000001.gif" alt="Moving-Mnist Dataset Example">
+</p>
 
 Source: http://www.cs.toronto.edu/~nitish/unsupervised_video/)
 
-contains 10,000 sequences each of length 20 showing 2 digits moving in a 64 x 64 frame.
+Contains 10,000 sequences each of length 20 showing 2 digits moving in a 64 x 64 frame.
 
-## TYPES
+## Type of models
 
 ### RNNs(Vanilla-RNN, LSTM, GRU) + Conv2d
 
@@ -43,5 +45,11 @@ In this model, we use VEA to encode 2d image into 1d latent vector, then use the
 
 #### Result
 
-![Alt Text](https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/movingmnistprediction.gif)
+First 10 frames is used to predict next 10 frames
+
+Ground truth is on the left and predicted sequence is on the right. Note that previous 10 frames is identical, comparison is made using last 10 frames.
+
+<p align="center">
+    <img width="200" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/movingmnistprediction.gif" alt="Moving-Mnist Dataset Example"> 
+</p>
 
