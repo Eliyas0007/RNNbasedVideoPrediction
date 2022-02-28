@@ -6,7 +6,7 @@ In this repo we have 2 models for simple video prediction using recurrent networ
 
 #### RNNs(Vanilla-RNN, LSTM, GRU) + Conv2d
 
-In this model, we firstly compress an image to a 2d latent vector using CNN and appliy 3 types of RNN to predict next 10 frames.
+In this model, we firstly compress an image to a 2d latent matrix using CNN and appliy 3 types of RNN to predict next 10 frames.
 
 **Tested**
 
@@ -24,7 +24,6 @@ In this model, we use VEA to encode 2d image into 1d latent vector, then use the
 **Tested**
 
 - Vanilla VAE is trained using moving mnist and it is able to generate good quality images
+- VAE + LSTM is able to predict well generalized future 10 frames
 
-**Implementing**
-
-- VAE + LSTM
+- Results will be presented later!
