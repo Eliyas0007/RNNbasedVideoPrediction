@@ -79,17 +79,22 @@ encoded_train = rearrange(encoded_train, 'b f l -> f b l')
 encoded_target = rearrange(encoded_target, 'b f l -> f b l')
 # print(encoded_train.shape, encoded_target.shape)
 
+
 pred = seq2seq(encoded_train)
 pred = rearrange(pred, 'f b l -> b f l')
 pred = pred.unsqueeze(0).to(device)
 
+original_decoded = vae.decode(encoded_train)
+
 inference = vae.decode(pred)
+original_video = torch.cat([video.squeeze(0), target.squeeze(0)])
+predicted_video = torch.cat([video.squeeze(0), inference])
 
 
-for b in range(inference.shape[0]):
+for b in range(original_video.shape[0]):
 
-    target_image = target[0][b]
-    infer_image = inference[b]
+    target_image = original_video[b]
+    infer_image = predicted_video[b]
 
     # print(infer_image.shape)
     target_image = rearrange(target_image.cpu().detach().numpy(), 'c h w -> h w c')
