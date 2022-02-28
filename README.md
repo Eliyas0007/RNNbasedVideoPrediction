@@ -26,4 +26,6 @@ In this model, we use VEA to encode 2d image into 1d latent vector, then use the
 - Vanilla VAE is trained using moving mnist and it is able to generate good quality images
 - VAE + LSTM is able to predict well generalized future 10 frames
 
-- Results will be presented later!
+- **Result**
+![Alt Text](https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/movingmnistprediction.gif)
+
