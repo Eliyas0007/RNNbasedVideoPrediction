@@ -56,13 +56,13 @@ First 10 frames is used to predict next 10 frames
 Ground truth is on the left and predicted sequence is on the right. Note that previous 10 frames is identical, comparison is made using last 10 frames.
 
 <p align="center">
-    <img width="200" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/movingmnistprediction.gif" alt="Moving-Mnist Dataset Example"> 
+    <img width="200" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/single_batch_prediction.gif" alt="single batch prediction"> 
 </p>
 
 More long range prediction 
 
 <p align="center">
-    <img width="500" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/long_range_prediction.gif" alt="Moving-Mnist Dataset Example"> 
+    <img width="300" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/Long_range_prediction.gif" alt="long range prediction"> 
 </p>
 
 
