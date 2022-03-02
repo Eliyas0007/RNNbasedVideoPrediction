@@ -77,8 +77,8 @@ for b in range(batch):
 encoded_train = rearrange(encoded_train, 'b f l -> f b l')
 encoded_target = rearrange(encoded_target, 'b f l -> f b l')
 
+# 10 means it will predict 100 frames, (r * 10)
 range_of_prediction = 10
-
 
 for r in range(range_of_prediction):
 

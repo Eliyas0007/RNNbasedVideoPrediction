@@ -9,6 +9,12 @@ In this repo we have 2 models for simple video prediction using recurrent networ
 - torch 1.10.1
 - torchvision 0.11.2
 
+## How to use
+
+```
+$ python inference.py
+```
+
 ## Dataset
 ### Moving-Mnist Dataset
 <p align="center">
@@ -52,4 +58,11 @@ Ground truth is on the left and predicted sequence is on the right. Note that pr
 <p align="center">
     <img width="200" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/movingmnistprediction.gif" alt="Moving-Mnist Dataset Example"> 
 </p>
+
+More long range prediction 
+
+<p align="center">
+    <img width="200" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/long_range_prediction.gif" alt="Moving-Mnist Dataset Example"> 
+</p>
+
 
