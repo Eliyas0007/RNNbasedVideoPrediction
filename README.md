@@ -63,7 +63,7 @@ Ground truth is on the left and predicted sequence is on the right. Note that pr
     <img width="200" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/single_batch_prediction.gif" alt="single batch prediction"> 
 </p>
 
-More long range prediction 
+Longer range prediction 
 
 <p align="center">
     <img width="200" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/Long_range_prediction.gif" alt="long range prediction"> 
