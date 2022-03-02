@@ -15,7 +15,7 @@ In this repo we have 2 models for simple video prediction using recurrent networ
     <img width="200" src="http://www.cs.toronto.edu/~nitish/unsupervised_video/images/000001.gif" alt="Moving-Mnist Dataset Example">
 </p>
 
-Source: http://www.cs.toronto.edu/~nitish/unsupervised_video/)
+Source: http://www.cs.toronto.edu/~nitish/unsupervised_video/
 
 Contains 10,000 sequences each of length 20 showing 2 digits moving in a 64 x 64 frame.
 
