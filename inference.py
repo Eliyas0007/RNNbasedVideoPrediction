@@ -2,7 +2,6 @@ import sys
 sys.path.append('.')
 
 import cv2
-import numpy
 import torch
 import random
 import torchvision.transforms as transforms
@@ -18,7 +17,7 @@ random.seed(0)
 torch.manual_seed(0)
 
 # Device
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+device = torch.device('cpu' if torch.cuda.is_available() else 'cpu')
 
 # Model path
 model_path = 'SavedModels/step6200.pth'
@@ -77,32 +76,43 @@ for b in range(batch):
 
 encoded_train = rearrange(encoded_train, 'b f l -> f b l')
 encoded_target = rearrange(encoded_target, 'b f l -> f b l')
-# print(encoded_train.shape, encoded_target.shape)
+
+range_of_prediction = 10
 
 
-pred = seq2seq(encoded_train)
-pred = rearrange(pred, 'f b l -> b f l')
-pred = pred.unsqueeze(0).to(device)
+for r in range(range_of_prediction):
+
+    if r == 0:
+        # first 10 frames
+        pred = seq2seq(encoded_train)
+
+        pred_for_infer = rearrange(pred, 'f b l -> b f l')
+        pred_for_infer = pred_for_infer.unsqueeze(0).to(device)
+        inference = vae.decode(pred_for_infer)
+        predicted_video = torch.cat([inference])
+    else:
+        pred = seq2seq(pred)
+
+        pred_for_infer = rearrange(pred, 'f b l -> b f l')
+        inference = vae.decode(pred_for_infer)
+        predicted_video = torch.cat([predicted_video, inference])
+
 
 original_decoded = vae.decode(encoded_train)
 
-inference = vae.decode(pred)
 original_video = torch.cat([video.squeeze(0), target.squeeze(0)])
-predicted_video = torch.cat([video.squeeze(0), inference])
 
+for b in range(len(predicted_video)):
 
-for b in range(original_video.shape[0]):
-
-    target_image = original_video[b]
+    # target_image = original_video[b]
     infer_image = predicted_video[b]
 
     # print(infer_image.shape)
-    target_image = rearrange(target_image.cpu().detach().numpy(), 'c h w -> h w c')
+    # target_image = rearrange(target_image.cpu().detach().numpy(), 'c h w -> h w c')
     infer_image = rearrange(infer_image.cpu().detach().numpy(), 'c h w -> h w c')
 
-    Hori = numpy.concatenate((target_image, infer_image), axis=1)
+    # Hori = numpy.concatenate((target_image, infer_image), axis=1)
 
-    cv2.imshow('target and inferece', Hori)
+    cv2.imshow('Inferece', infer_image)
 
-    cv2.waitKey(300)
-
+    cv2.waitKey(200)
