@@ -82,8 +82,7 @@ class ConvRNNDecoderCell(nn.Module):
             nn.Linear(1024, 52 * 52)
         )
 
-        self.conv_expand_layer = nn.Sequential(
-            nn.ConvTranspose2d(1, 3, 5),
+        self.conv_expafrom DataLoader.MovingMnistDataset import MovingMNISTDatasetspose2d(1, 3, 5),
             nn.GELU(),
             nn.BatchNorm2d(3),
             nn.ConvTranspose2d(3, 3, 5),
