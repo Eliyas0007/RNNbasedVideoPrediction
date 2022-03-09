@@ -78,3 +78,28 @@ class Decoder(nn.Module):
         x = self.decoder(x)
         x = self.final_layer(x)
         return x
+
+class AutoEncoder(nn.Module):
+    def __init__(self, encoder, decoder):
+        super(AutoEncoder, self).__init__()
+
+        self.encoder = encoder
+        self.decoder = decoder
+
+    def forward(self, x):
+        
+        x = self.encoder(x)
+        x = self.decoder(x)
+
+        return x
+
+if __name__ == '__main__':
+
+    encoder = Encoder(1, 128)
+    decoder = Decoder(128)
+    autoencoder = AutoEncoder(encoder, decoder)
+
+    image = torch.rand(1, 1, 64, 64)
+
+    out = autoencoder(image)
+    print(out.shape)
