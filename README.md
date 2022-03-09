@@ -42,6 +42,10 @@ In this model, we firstly compress an image to a 2d latent matrix using CNN and 
 
 ### Vanilla VAE + RNNs
 
+<p align="center">
+    <img src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/Model_architecture.png" alt="long range prediction"> 
+</p>
+
 In this model, we use VEA to encode 2d image into 1d latent vector, then use the latent vector to feed RNN to predic next n frames.
 
 #### Tested
@@ -59,10 +63,10 @@ Ground truth is on the left and predicted sequence is on the right. Note that pr
     <img width="200" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/single_batch_prediction.gif" alt="single batch prediction"> 
 </p>
 
-More long range prediction 
+Longer range prediction 
 
 <p align="center">
-    <img width="300" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/Long_range_prediction.gif" alt="long range prediction"> 
+    <img width="200" src="https://github.com/Eliyas0007/RNNbasedVideoPrediction/blob/main/images/Long_range_prediction.gif" alt="long range prediction"> 
 </p>
 
 
