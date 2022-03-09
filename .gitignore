@@ -10,6 +10,7 @@ __pycache__/
 runs/
 vae_runs/
 vaelstm_runs/
+aelstm_runs/
 SavedModels/
 
 # Submodules
