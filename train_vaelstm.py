@@ -5,7 +5,7 @@ import tqdm
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
+import Models.AutoEncoder as AutoEncoder
 import torchvision.transforms as transforms
 
 # from tensorboard import SummaryWriter
@@ -33,16 +33,25 @@ batch_size = 64
 # General settings
 load_model = False
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-writer = SummaryWriter(f'vaelstm_runs/')
+writer = SummaryWriter(f'aelstm_runs/')
 step = 0
 
 # VAE hyperparameters
-model_path = 'SavedModels/step6200.pth'
+model_path = 'SavedModels/vae_step6200.pth'
 in_channels = 1
 latent_size = 128
 vae = VanillaVAE(in_channels, latent_size)
 vae.load_state_dict(torch.load(model_path))
 vae = vae.to(device)
+
+# simple autoencoder
+ae_model_path = 'SavedModels/autoencoder_step16000.pth'
+ae_encoder = AutoEncoder.Encoder(in_channels, latent_size)
+ae_decoder = AutoEncoder.Decoder(latent_size)
+ae = AutoEncoder.AutoEncoder(ae_encoder, ae_decoder)
+ae.load_state_dict(torch.load(ae_model_path))
+ae.to(device)
+
 
 # Seq2Seq model and hype parameters
 input_size = latent_size
@@ -92,19 +101,28 @@ for epoch in range(num_epochs):
             encoded_target = torch.empty(batch, frame_len, latent_size).to(device)
             for b in range(batch):
                 for f in range(frame_len):
-                    train_frame_latent = vae(train[b][f].unsqueeze(0))
-                    target_frame_latent = vae(target[b][f].unsqueeze(0))
-                    # reparameterize
-                    std = torch.exp(0.5 * train_frame_latent[2])
-                    eps = torch.randn_like(train_frame_latent[3])
-                    latent_tr =  eps * std + train_frame_latent[2]
+                    '''
+                    this is for variational autoencoder
+                    '''
+                    # train_frame_latent = vae(train[b][f].unsqueeze(0))
+                    # target_frame_latent = vae(target[b][f].unsqueeze(0))
+                    # # reparameterize
+                    # std = torch.exp(0.5 * train_frame_latent[2])
+                    # eps = torch.randn_like(train_frame_latent[3])
+                    # latent_tr =  eps * std + train_frame_latent[2]
 
-                    std = torch.exp(0.5 * target_frame_latent[2])
-                    eps = torch.randn_like(target_frame_latent[3])
-                    latent_ta =  eps * std + target_frame_latent[2]
+                    # std = torch.exp(0.5 * target_frame_latent[2])
+                    # eps = torch.randn_like(target_frame_latent[3])
+                    # latent_ta =  eps * std + target_frame_latent[2]
 
-                    encoded_train[b][f] = latent_tr
-                    encoded_target[b][f] = latent_ta
+                    # encoded_train[b][f] = latent_tr
+                    # encoded_target[b][f] = latent_ta
+
+                    '''
+                    this is for simple autoencoder
+                    '''
+                    encoded_train[b][f] = ae.encoder(train[b][f].unsqueeze(0))
+                    encoded_target[b][f] = ae.encoder(target[b][f].unsqueeze(0))
 
             encoded_train = rearrange(encoded_train, 'b f l -> f b l')
             encoded_target = rearrange(encoded_target, 'b f l -> f b l')
@@ -121,7 +139,7 @@ for epoch in range(num_epochs):
             # print(f'Training Loss : {loss.item()}')
 
             if step % 100 == 0:
-                torch.save(seq2seq.state_dict(), model_save_path + f'vaelstm_step{step}.pth')
+                torch.save(seq2seq.state_dict(), model_save_path + f'aelstm_step{step}.pth')
 
             writer.add_scalar('Training Loss', loss.item(), global_step=step)
             step += 1
