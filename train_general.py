@@ -18,6 +18,7 @@ from Models.AutoEncoder import Encoder, Decoder, AutoEncoder
 def train(  model,
             load_model, 
             lr_rate,
+            weight_decay,
             loss_fn, 
             data_set, 
             num_epochs, 
@@ -31,7 +32,7 @@ def train(  model,
         autoencoder.load_state_dict(torch.load(model_path))
         print('state dict loaded!')
 
-    optimizer = optim.Adam(model.parameters(), lr=lr_rate)
+    optimizer = optim.Adam(model.parameters(), lr=lr_rate, weight_decay=weight_decay)
     
     for epoch in range(num_epochs): 
 
@@ -81,6 +82,7 @@ if __name__ == '__main__':
     num_epochs = 5
     learning_rate = 0.0002
     batch_size = 16
+    weight_decay = 0.3
 
     # Model Hyperparameters
     load_model = False
@@ -119,6 +121,7 @@ if __name__ == '__main__':
             load_model=False, 
             lr_rate=learning_rate,
             loss_fn=criterion,
+            weight_decay=weight_decay,
             data_set=dataset,
             num_epochs=num_epochs,
             device=device,
