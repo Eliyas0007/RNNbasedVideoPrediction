@@ -23,12 +23,11 @@ print('Initializing...')
 
 # save path for model
 model_save_path = './SavedModels/'
+model_path = './SavedModels/autoencoder_step12300.pth'
 
 # Hyperparameters
-num_epochs = 1
-
+num_epochs = 5
 learning_rate = 0.0002
-
 batch_size = 16
 
 # Model Hyperparameters
@@ -66,6 +65,10 @@ dataset = MovingMNISTDataset(root_dir=data_path, load_type='image',
 loader =  DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
 print('Data Loaded, Start training..')
 
+if load_model:
+    autoencoder.load_state_dict(torch.load(model_path))
+    print('state dict loaded!')
+
 # t, l = next(iter(loader))
 # print(t.shape, l.shape)
 # image = numpy.array(l[10].cpu().detach().numpy())
@@ -90,16 +93,16 @@ for epoch in range(num_epochs):
             loss = criterion(pred, train)
             loss.backward()
 
-            nn.utils.clip_grad_norm_(model.parameters(), max_norm=1)
+            nn.utils.clip_grad_norm_(autoencoder.parameters(), max_norm=1)
             optimizer.step()
 
-            if step % 100 == 0:
+            if step % 1000 == 0:
                 print(f'Training Loss : {loss.item()}')
-                torch.save(model.state_dict(), model_save_path + f'autoencoder_step{step}.pth')
+                torch.save(autoencoder.state_dict(), model_save_path + f'autoencoder_step{step}.pth')
 
                 image = numpy.array(pred[0].cpu().detach().numpy())
                 image = rearrange(image, 'c w h -> w h c')
-                cv2.imwrite('aelstm_runs/ae_{step}.png', image)
+                cv2.imwrite(f'aelstm_runs/ae_{step}.png', image)
 
             writer.add_scalar('Training Loss', loss.item(), global_step=step)
             step += 1
