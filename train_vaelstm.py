@@ -24,17 +24,15 @@ print('Initializing...')
 model_save_path = './SavedModels/'
 
 # Hyperparameters
-num_epochs = 50
-
+num_epochs = 300
 learning_rate = 0.001
-
 batch_size = 64
 
 # General settings
-load_model = False
+load_model = True
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 writer = SummaryWriter(f'aelstm_runs/')
-step = 0
+step = 30001
 
 # VAE hyperparameters
 model_path = 'SavedModels/vae_step6200.pth'
@@ -54,6 +52,7 @@ ae.to(device)
 
 
 # Seq2Seq model and hype parameters
+seq2seq_model_path = 'SavedModels/aelstm_step31000.pth'
 input_size = latent_size
 hidden_size = 1024
 num_layers = 2
@@ -81,9 +80,9 @@ loader =  DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
 print('Data Loaded, Start training..')
 
 
-# if load_model:
-#     model.load_state_dict(torch.load(model_path))
-#     print('model state dict loaded')
+if load_model:
+    seq2seq.load_state_dict(torch.load(seq2seq_model_path))
+    print('model state dict loaded!')
 
 for epoch in range(num_epochs):
 
@@ -136,10 +135,10 @@ for epoch in range(num_epochs):
 
             nn.utils.clip_grad_norm_(seq2seq.parameters(), max_norm=1)
             optimizer.step()
-            # print(f'Training Loss : {loss.item()}')
 
-            if step % 100 == 0:
+            if step % 1000 == 0:
                 torch.save(seq2seq.state_dict(), model_save_path + f'aelstm_step{step}.pth')
+                print(f'Training Loss : {loss.item()}')
 
             writer.add_scalar('Training Loss', loss.item(), global_step=step)
             step += 1

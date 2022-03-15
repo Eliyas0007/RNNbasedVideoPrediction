@@ -7,7 +7,7 @@ import torch
 import numpy
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
+import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 
 # from tensorboard import SummaryWriter
@@ -23,15 +23,15 @@ print('Initializing...')
 
 # save path for model
 model_save_path = './SavedModels/'
-model_path = './SavedModels/autoencoder_step12300.pth'
+model_path = './workingModels/autoencoder_step18000.pth'
 
 # Hyperparameters
-num_epochs = 5
+num_epochs = 1
 learning_rate = 0.0002
 batch_size = 16
 
 # Model Hyperparameters
-load_model = False
+load_model = True
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 writer = SummaryWriter(f'aelstm_runs/')
 step = 0
@@ -63,6 +63,14 @@ dataset = MovingMNISTDataset(root_dir=data_path, load_type='image',
                                     ])
                             )
 loader =  DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
+
+mnist_dataset = datasets.MNIST(root='MNISTDATA/', train=True, download=True, transform=transforms.Compose([
+                                    # transforms.Normalize((0.5), (0.5)),
+                                    transforms.ToTensor(),
+                                    transforms.Resize((64, 64))
+                                    ]))
+mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=batch_size, shuffle=True)
+
 print('Data Loaded, Start training..')
 
 if load_model:
@@ -80,11 +88,11 @@ for epoch in range(num_epochs):
 
     print(f'Epoch [current: {epoch} / total: {num_epochs}]')
 
-    with tqdm.tqdm(loader, unit='batch') as tepoch:
-        for (train, target) in tepoch:
+    with tqdm.tqdm(mnist_loader, unit='batch') as tepoch:
+        for (train, _) in tepoch:
             
             train = train.to(device)
-            target = target.to(device)
+            # target = target.to(device)
             
             pred = autoencoder(train)
 
@@ -96,13 +104,13 @@ for epoch in range(num_epochs):
             nn.utils.clip_grad_norm_(autoencoder.parameters(), max_norm=1)
             optimizer.step()
 
-            if step % 1000 == 0:
+            if step % 100 == 0:
                 print(f'Training Loss : {loss.item()}')
-                torch.save(autoencoder.state_dict(), model_save_path + f'autoencoder_step{step}.pth')
+                torch.save(autoencoder.state_dict(), model_save_path + f'fine_tuned_autoencoder_step{step}.pth')
 
                 image = numpy.array(pred[0].cpu().detach().numpy())
                 image = rearrange(image, 'c w h -> w h c')
-                cv2.imwrite(f'aelstm_runs/ae_{step}.png', image)
+                cv2.imwrite(f'aelstm_runs/ae_{step}.png', image*256)
 
             writer.add_scalar('Training Loss', loss.item(), global_step=step)
             step += 1

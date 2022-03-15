@@ -6,12 +6,18 @@ __pycache__/
 # C extensions
 *.so
 
+# zip files
+*.zip
+
 # unnecessary folders
 runs/
 vae_runs/
 vaelstm_runs/
 aelstm_runs/
 SavedModels/
+workingModels/
+inferImages/
+MNISTDATA/
 
 # Submodules
 PytorchVAE/
