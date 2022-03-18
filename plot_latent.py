@@ -23,22 +23,13 @@ def tensor2image(tensor):
     return rearrange(tensor.cpu().detach().numpy(), 'c h w -> h w c') * 256
 
 
-def animate(index):
-    ...
-    y = encoded_train.squeeze(1).detach().numpy()[index]
-    plt.cla()
-    plt.plot(y, x)
-    plt.xlim([-10, 10])
-    plt.ylim([-1, 130])
-    plt.tight_layout()
-
 # Random seed
 random.seed(333)
 torch.manual_seed(333)
 
 # plt.style.use('seaborn-poster')
-# plt.style.use('seaborn-paper')
-plt.style.use('fivethirtyeight')
+plt.style.use('seaborn-paper')
+# plt.style.use('fivethirtyeight')
 
 # Device
 device = torch.device('cpu' if torch.cuda.is_available() else 'cpu')
@@ -141,18 +132,29 @@ for b in range(batch):
 
 encoded_train = rearrange(encoded_train, 'b f l -> f b l')
 encoded_target = rearrange(encoded_target, 'b f l -> f b l')
+decoded_train = ae.decoder(encoded_train)
 
+'''
+------------------ PLOT ----------------
+'''
+def animate(index):
 
+    y = encoded_train.squeeze(1).detach().numpy()[index]
+    plot = axes[0]
+    plot.cla()
+    plot.plot(y, x)
+    plot.set_xlim([-10, 10])
+    plot.set_ylim([-1, 130])
+    plot.figure.canvas.draw()
 
+    image.imshow(tensor2image(decoded_train[index]))
 
-
-ani = animation.FuncAnimation(plt.gcf(), animate, interval=200)
-
-
+fig, axes = plt.subplots(1, 2)
+print(fig, axes)
+plot = axes[0]
+image = axes[1]
 
 x = numpy.array([x for x in range(128)])
-y = encoded_train.squeeze(1).detach().numpy()[0]
-# y = rearrange(y, 'x y -> y x')[0]
-print(x.shape, y.shape)
+ani = animation.FuncAnimation(fig, animate, interval=500, frames=10)
 
 plt.show()
