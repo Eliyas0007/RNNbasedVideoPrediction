@@ -23,12 +23,12 @@ print('Initializing...')
 
 # save path for model
 model_save_path = './SavedModels/'
-model_path = './workingModels/autoencoder_step18000.pth'
+model_path = './workingModels/autoencoder_mnist_pretrained_step18000.pth'
 
 # Hyperparameters
 num_epochs = 1
 learning_rate = 0.0002
-batch_size = 16
+batch_size = 64
 
 # Model Hyperparameters
 load_model = True
@@ -88,7 +88,7 @@ for epoch in range(num_epochs):
 
     print(f'Epoch [current: {epoch} / total: {num_epochs}]')
 
-    with tqdm.tqdm(mnist_loader, unit='batch') as tepoch:
+    with tqdm.tqdm(loader, unit='batch') as tepoch:
         for (train, _) in tepoch:
             
             train = train.to(device)
@@ -104,9 +104,9 @@ for epoch in range(num_epochs):
             nn.utils.clip_grad_norm_(autoencoder.parameters(), max_norm=1)
             optimizer.step()
 
-            if step % 100 == 0:
+            if step % 10 == 0:
                 print(f'Training Loss : {loss.item()}')
-                torch.save(autoencoder.state_dict(), model_save_path + f'fine_tuned_autoencoder_step{step}.pth')
+                torch.save(autoencoder.state_dict(), model_save_path + f'fine_tuned_autoencoder_withvideodata__step{step}.pth')
 
                 image = numpy.array(pred[0].cpu().detach().numpy())
                 image = rearrange(image, 'c w h -> w h c')

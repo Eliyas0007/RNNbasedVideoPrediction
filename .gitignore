@@ -18,6 +18,7 @@ SavedModels/
 workingModels/
 inferImages/
 MNISTDATA/
+results/
 
 # Submodules
 PytorchVAE/
