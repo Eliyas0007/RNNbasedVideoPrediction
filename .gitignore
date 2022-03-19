@@ -9,6 +9,9 @@ __pycache__/
 # zip files
 *.zip
 
+# images
+manipulated_image.png
+
 # unnecessary folders
 runs/
 vae_runs/
@@ -19,6 +22,7 @@ workingModels/
 inferImages/
 MNISTDATA/
 results/
+simplemovement/
 
 # Submodules
 PytorchVAE/

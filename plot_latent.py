@@ -1,7 +1,3 @@
-import sys
-from unittest import FunctionTestCase
-sys.path.append('.')
-
 import cv2
 import numpy
 import torch
@@ -12,9 +8,11 @@ import matplotlib.animation as animation
 import Models.AutoEncoder as AutoEncoder
 import torchvision.transforms as transforms
 
+from glob import glob
 from einops import rearrange
+from natsort import natsorted
 from torch.utils.data import DataLoader
-from PytorchVAE.models.vanilla_vae import VanillaVAE
+# from PytorchVAE.models.vanilla_vae import VanillaVAE
 from Models.VAESeq2Seq import VAESeq2Seq, Encoder, Decoder
 from DataLoader.MovingMnistDataset import MovingMNISTDataset
 
@@ -42,12 +40,22 @@ vae_model_path = 'SavedModels/vae_step6200.pth'
 vaelstm_model_path = 'SavedModels/vaelstm_step7800.pth'
 aelstm_model_path = 'SavedModels/aelstm_step18000.pth'
 
-# variational autoencoder
+# Simple Movement Batch
+root_path = './simplemovement/*.png'
+image_paths = natsorted(glob(root_path))
+video = torch.empty((1, 20, 1, 64, 64))
+for i, path in enumerate(image_paths):
+    image = numpy.array(cv2.imread(path, cv2.IMREAD_GRAYSCALE))
+    image = torch.from_numpy(image)
+    video[0][i] = image.unsqueeze(0)
+
+
+# # variational autoencoder
 in_channels = 1
 latent_size = 128
-vae = VanillaVAE(in_channels, latent_size)
-vae.load_state_dict(torch.load(vae_model_path))
-vae.to(device)
+# vae = VanillaVAE(in_channels, latent_size)
+# vae.load_state_dict(torch.load(vae_model_path))
+# vae.to(device)
 
 # simple autoencoder
 ae_encoder = AutoEncoder.Encoder(in_channels, latent_size)
@@ -67,30 +75,28 @@ seq2seq = VAESeq2Seq(encoder, decoder, device).to(device)
 seq2seq.load_state_dict(torch.load(aelstm_model_path))
 
 
-# MovingMNIST
-data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
-dataset = MovingMNISTDataset(root_dir=data_path, load_type='video',
-                                transform=transforms.Compose([
-                                    transforms.Normalize((0.5), (0.5)),
-                                    # transforms.ToTensor()
-                                    ])
-                            )
-loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
-video, target = next(iter(loader))
+# # MovingMNIST
+# data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
+# dataset = MovingMNISTDataset(root_dir=data_path, load_type='video',
+#                                 transform=transforms.Compose([
+#                                     transforms.Normalize((0.5), (0.5)),
+#                                     ])
+#                             )
+# loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
+# video, target = next(iter(loader))
 
-# MNIST
-mnist_dataset = datasets.MNIST(root='MNISTDATA/', train=False, download=True, transform=transforms.Compose([
-                                    # transforms.Normalize((0.5), (0.5)),
-                                    transforms.ToTensor(),
-                                    transforms.Resize((64, 64))
-                                    ]))
-mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=64, shuffle=True)
-image, _ = next(iter(mnist_loader))
+# # MNIST
+# mnist_dataset = datasets.MNIST(root='MNISTDATA/', train=False, download=True, transform=transforms.Compose([
+#                                     transforms.ToTensor(),
+#                                     transforms.Resize((64, 64))
+#                                     ]))
+# mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=64, shuffle=True)
+# image, _ = next(iter(mnist_loader))
 
 # print(video.shape, target[0].shape)
 
-video = video.to(device)
-target = target.to(device)
+# video = video.to(device)
+# target = target.to(device)
 # Encode image to latent using trained VAE
 batch, frame_len, c, h, w = video.shape
 encoded_train = torch.empty(batch, frame_len, latent_size).to(device)
@@ -124,14 +130,15 @@ for b in range(batch):
         '''
         for AE
         '''
+        print(video[b][f].unsqueeze(0).dtype)
         train_frame_latent = ae.encoder(video[b][f].unsqueeze(0))
-        target_frame_latent = ae.encoder(target[b][f].unsqueeze(0))
+        # target_frame_latent = ae.encoder(target[b][f].unsqueeze(0))
 
         encoded_train[b][f] = train_frame_latent
-        encoded_target[b][f] = target_frame_latent
+        # encoded_target[b][f] = target_frame_latent
 
 encoded_train = rearrange(encoded_train, 'b f l -> f b l')
-encoded_target = rearrange(encoded_target, 'b f l -> f b l')
+# encoded_target = rearrange(encoded_target, 'b f l -> f b l')
 decoded_train = ae.decoder(encoded_train)
 
 '''
@@ -155,6 +162,6 @@ plot = axes[0]
 image = axes[1]
 
 x = numpy.array([x for x in range(128)])
-ani = animation.FuncAnimation(fig, animate, interval=500, frames=10)
+ani = animation.FuncAnimation(fig, animate, interval=500, frames=frame_len)
 
-plt.show()
+# plt.show()
