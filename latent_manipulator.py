@@ -37,7 +37,7 @@ master.title('Latent Manipulator')
 # master.geometry("880x650")
 frame = Frame(master, width=64, height=64)
 frame.grid(row=8, column=9)
-img = ImageTk.PhotoImage(Image.open("simplemovement/example1.png"))
+img = ImageTk.PhotoImage(Image.open("simplemovement/example0.png"))
 label = Label(frame, image=img)
 label.pack()
 
@@ -47,7 +47,7 @@ for i in range(16):
 
     for j in range(8):
 
-        w = Scale(master, from_=0-10.0, to=10.0, orient=HORIZONTAL, command=print_value)
+        w = Scale(master, from_=0-100.0, to=100.0, orient=HORIZONTAL, command=print_value)
         w.grid(row=i, column=j)
         scales.append(w)
 
@@ -62,9 +62,9 @@ latent_size = 128
 ae_encoder = AutoEncoder.Encoder(in_channels, latent_size)
 ae_decoder = AutoEncoder.Decoder(latent_size)
 ae = AutoEncoder.AutoEncoder(ae_encoder, ae_decoder)
-ae.load_state_dict(torch.load(ae_model_path))
+ae.load_state_dict(torch.load(ae_model_path, map_location=torch.device('cpu')))
 
-sample_image_path = './simplemovement/example1.png'
+sample_image_path = './simplemovement/example0.png'
 sample_image = cv2.imread(sample_image_path, cv2.IMREAD_GRAYSCALE)
 sample_image = numpy.asarray(sample_image, dtype=numpy.float32)
 sample_tensor = torch.tensor(sample_image).unsqueeze(0).unsqueeze(0)
