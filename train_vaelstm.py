@@ -1,6 +1,3 @@
-import sys
-sys.path.append("/home/yiliyasi/Documents/Projects/RNNbasedVideoPrediction")
-
 import tqdm
 import torch
 import torch.nn as nn
@@ -13,7 +10,7 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from einops import rearrange
 
-from PytorchVAE.models.vanilla_vae import VanillaVAE
+# from PytorchVAE.models.vanilla_vae import VanillaVAE
 from Models.VAESeq2Seq import VAESeq2Seq, Encoder, Decoder
 from DataLoader.MovingMnistDataset import MovingMNISTDataset
 

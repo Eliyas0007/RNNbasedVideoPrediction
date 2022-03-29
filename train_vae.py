@@ -1,6 +1,3 @@
-import sys
-sys.path.append("/home/yiliyasi/Documents/Projects/RNNbasedVideoPrediction")
-
 import cv2
 import tqdm
 import torch
@@ -15,18 +12,19 @@ from einops import rearrange
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from Models.AutoEncoder import Encoder, Decoder, AutoEncoder
-from PytorchVAE.models.vanilla_vae import VanillaVAE
+# from PytorchVAE.models.vanilla_vae import VanillaVAE
 from DataLoader.MovingMnistDataset import MovingMNISTDataset
+from DataLoader.CustomMovingMnistDataset import CustomMovingMNISTDataset
 
 
 print('Initializing...')
 
 # save path for model
 model_save_path = './SavedModels/'
-model_path = './workingModels/autoencoder_mnist_pretrained_step18000.pth'
+model_path = './SavedModels/ae_trained_with_custom_data_step2250.pth'
 
 # Hyperparameters
-num_epochs = 1
+num_epochs = 5
 learning_rate = 0.0002
 batch_size = 64
 
@@ -34,13 +32,13 @@ batch_size = 64
 load_model = True
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 writer = SummaryWriter(f'aelstm_runs/')
-step = 0
+step = 2251
 
 # VAE hyperparameters
 in_channels = 1
-latent_size = 128
-model = VanillaVAE(in_channels, latent_size)
-model = model.to(device)
+latent_size = 16
+# model = VanillaVAE(in_channels, latent_size)
+# model = model.to(device)
 
 # Autoencoder
 encoder = Encoder(in_channels, latent_size).to(device)
@@ -55,21 +53,28 @@ criterion = nn.MSELoss()
 
 # Data loading
 print('Loading Data')
-data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
-dataset = MovingMNISTDataset(root_dir=data_path, load_type='image',
+# data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
+# dataset = MovingMNISTDataset(root_dir=data_path, load_type='image',
+#                                 transform=transforms.Compose([
+#                                     transforms.Normalize((0.5), (0.5)),
+#                                     # transforms.ToTensor()
+#                                     ])
+#                             )
+# loader =  DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
+
+custom_data_path = '/home/yiliyasi/Documents/Projects/Mine/MovingMNIST-Generator/data_horizontal'
+custom_dataset = CustomMovingMNISTDataset(root_dir=custom_data_path,
                                 transform=transforms.Compose([
                                     transforms.Normalize((0.5), (0.5)),
-                                    # transforms.ToTensor()
-                                    ])
-                            )
-loader =  DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
-
-mnist_dataset = datasets.MNIST(root='MNISTDATA/', train=True, download=True, transform=transforms.Compose([
-                                    # transforms.Normalize((0.5), (0.5)),
-                                    transforms.ToTensor(),
-                                    transforms.Resize((64, 64))
                                     ]))
-mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=batch_size, shuffle=True)
+custom_loader =  DataLoader(dataset=custom_dataset, batch_size=batch_size, shuffle=True)
+
+# mnist_dataset = datasets.MNIST(root='MNISTDATA/', train=True, download=True, transform=transforms.Compose([
+#                                     # transforms.Normalize((0.5), (0.5)),
+#                                     transforms.ToTensor(),
+#                                     transforms.Resize((64, 64))
+#                                     ]))
+# mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=batch_size, shuffle=True)
 
 print('Data Loaded, Start training..')
 
@@ -88,8 +93,8 @@ for epoch in range(num_epochs):
 
     print(f'Epoch [current: {epoch} / total: {num_epochs}]')
 
-    with tqdm.tqdm(loader, unit='batch') as tepoch:
-        for (train, _) in tepoch:
+    with tqdm.tqdm(custom_loader, unit='batch') as tepoch:
+        for train in tepoch:
             
             train = train.to(device)
             # target = target.to(device)
@@ -104,9 +109,9 @@ for epoch in range(num_epochs):
             nn.utils.clip_grad_norm_(autoencoder.parameters(), max_norm=1)
             optimizer.step()
 
-            if step % 10 == 0:
+            if step % 250 == 0:
                 print(f'Training Loss : {loss.item()}')
-                torch.save(autoencoder.state_dict(), model_save_path + f'fine_tuned_autoencoder_withvideodata__step{step}.pth')
+                torch.save(autoencoder.state_dict(), model_save_path + f'ae_trained_with_custom_data_step{step}.pth')
 
                 image = numpy.array(pred[0].cpu().detach().numpy())
                 image = rearrange(image, 'c w h -> w h c')
