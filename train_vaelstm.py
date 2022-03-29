@@ -13,6 +13,7 @@ from einops import rearrange
 # from PytorchVAE.models.vanilla_vae import VanillaVAE
 from Models.VAESeq2Seq import VAESeq2Seq, Encoder, Decoder
 from DataLoader.MovingMnistDataset import MovingMNISTDataset
+from DataLoader.CustomMovingMnistDataset import CustomMovingMNISTDataset
 
 
 print('Initializing...')
@@ -21,26 +22,26 @@ print('Initializing...')
 model_save_path = './SavedModels/'
 
 # Hyperparameters
-num_epochs = 300
+num_epochs = 500
 learning_rate = 0.001
 batch_size = 64
 
 # General settings
-load_model = True
+load_model = False
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 writer = SummaryWriter(f'aelstm_runs/')
-step = 30001
+step = 0
 
 # VAE hyperparameters
 model_path = 'SavedModels/vae_step6200.pth'
 in_channels = 1
-latent_size = 128
-vae = VanillaVAE(in_channels, latent_size)
-vae.load_state_dict(torch.load(model_path))
-vae = vae.to(device)
+latent_size = 16
+# vae = VanillaVAE(in_channels, latent_size)
+# vae.load_state_dict(torch.load(model_path))
+# vae = vae.to(device)
 
 # simple autoencoder
-ae_model_path = 'SavedModels/autoencoder_step16000.pth'
+ae_model_path = 'workingModels/ae_trained_with_custom_data_step3000.pth'
 ae_encoder = AutoEncoder.Encoder(in_channels, latent_size)
 ae_decoder = AutoEncoder.Decoder(latent_size)
 ae = AutoEncoder.AutoEncoder(ae_encoder, ae_decoder)
@@ -66,14 +67,22 @@ criterion = nn.MSELoss()
 
 # Data loading
 print('Loading Data')
-data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
-dataset = MovingMNISTDataset(root_dir=data_path, load_type='video',
+# data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
+# dataset = MovingMNISTDataset(root_dir=data_path, load_type='video',
+#                                 transform=transforms.Compose([
+#                                     transforms.Normalize((0.5), (0.5)),
+#                                     # transforms.ToTensor()
+#                                     ])
+#                             )
+# loader =  DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
+
+custom_data_path = '/home/yiliyasi/Documents/Projects/Mine/MovingMNIST-Generator/data_horizontal'
+custom_dataset = CustomMovingMNISTDataset(root_dir=custom_data_path,
                                 transform=transforms.Compose([
                                     transforms.Normalize((0.5), (0.5)),
-                                    # transforms.ToTensor()
-                                    ])
-                            )
-loader =  DataLoader(dataset=dataset, batch_size=batch_size, shuffle=True)
+                                    ]), load_type='video')
+custom_loader =  DataLoader(dataset=custom_dataset, batch_size=batch_size, shuffle=True)
+
 print('Data Loaded, Start training..')
 
 
@@ -85,12 +94,12 @@ for epoch in range(num_epochs):
 
     print(f'Epoch [current: {epoch} / total: {num_epochs}]')
 
-    with tqdm.tqdm(loader, unit='batch') as tepoch:
+    with tqdm.tqdm(custom_loader, unit='batch') as tepoch:
         for (train, target) in tepoch:
 
             train = train.to(device)
             target = target.to(device)
-
+            # print(train.shape, target.shape)
             # Encode image to latent using trained VAE
             batch, frame_len, c, h, w = train.shape
             encoded_train = torch.empty(batch, frame_len, latent_size).to(device)
@@ -134,7 +143,7 @@ for epoch in range(num_epochs):
             optimizer.step()
 
             if step % 1000 == 0:
-                torch.save(seq2seq.state_dict(), model_save_path + f'aelstm_step{step}.pth')
+                torch.save(seq2seq.state_dict(), model_save_path + f'16bitaelstm_step{step}.pth')
                 print(f'Training Loss : {loss.item()}')
 
             writer.add_scalar('Training Loss', loss.item(), global_step=step)

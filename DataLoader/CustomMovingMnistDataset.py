@@ -48,13 +48,12 @@ class CustomMovingMNISTDataset(Dataset):
                     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                     frame = numpy.asarray(frame)
                     frame = torch.from_numpy(frame)
-                    frame = transforms.functional.convert_image_dtype(frame, dtype=torch.float32) 
-                    # frame = self.transform(frame)
+                    frame = transforms.functional.convert_image_dtype(frame, dtype=torch.float32)
+                    frame = frame.unsqueeze(0)
+                    frame = self.transform(frame)
                     if i < (len(frame_paths) // 2):
-                        frame = frame.unsqueeze(dim=0)
                         train_frames[i] = frame
                     else:
-                        frame = frame.unsqueeze(dim=0)
                         label_frames[i-10] = frame
 
 
@@ -77,9 +76,9 @@ if __name__ == '__main__':
                                     transforms.Normalize((0.5), (0.5)),
                                     ]),
                                     load_type='video')
-    print(cmd.__len__())
-    cmd.__getitem__(0)
-
-    # loader = DataLoader(dataset=cmd, batch_size=10, shuffle=True)
-    # batch = next(iter(loader))
+    # print(cmd.__len__())
+    # train, target = cmd.__getitem__(0)
+    loader = DataLoader(dataset=cmd, batch_size=10, shuffle=True)
+    train, target = next(iter(loader))
+    print(train.shape, target.shape)
 

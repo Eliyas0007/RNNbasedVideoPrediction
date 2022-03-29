@@ -29,10 +29,10 @@ learning_rate = 0.0002
 batch_size = 64
 
 # Model Hyperparameters
-load_model = True
+load_model = False
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 writer = SummaryWriter(f'aelstm_runs/')
-step = 2251
+step = 0
 
 # VAE hyperparameters
 in_channels = 1
