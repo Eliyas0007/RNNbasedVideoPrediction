@@ -10,9 +10,10 @@ import torchvision.transforms as transforms
 
 from einops import rearrange
 from torch.utils.data import DataLoader
-from PytorchVAE.models.vanilla_vae import VanillaVAE
+# from PytorchVAE.models.vanilla_vae import VanillaVAE
 from Models.VAESeq2Seq import VAESeq2Seq, Encoder, Decoder
 from DataLoader.MovingMnistDataset import MovingMNISTDataset
+from DataLoader.CustomMovingMnistDataset import CustomMovingMNISTDataset
 
 def tensor2image(tensor):
     return rearrange(tensor.cpu().detach().numpy(), 'c h w -> h w c') * 256
@@ -26,6 +27,8 @@ device = torch.device('cpu' if torch.cuda.is_available() else 'cpu')
 
 # Model path
 ae_model_path = 'workingModels/autoencoder_step18000.pth'
+ae_model_16bit_path = 'workingModels/ae_trained_with_custom_data_step3000.pth'
+aelstm_model_16bit_path = 'workingModels/16bitaelstm_step30000.pth'
 # fine_tuned_model_path = 'SavedModels/fine_tuned_autoencoder_withvideodata__step1500.pth'
 # fine_tuned_model_path = 'SavedModels/autoencoder_step18000.pth'
 vae_model_path = 'SavedModels/vae_step6200.pth'
@@ -34,16 +37,16 @@ aelstm_model_path = 'SavedModels/aelstm_step18000.pth'
 
 # variational autoencoder
 in_channels = 1
-latent_size = 128
-vae = VanillaVAE(in_channels, latent_size)
-vae.load_state_dict(torch.load(vae_model_path))
-vae.to(device)
+latent_size = 16
+# vae = VanillaVAE(in_channels, latent_size)
+# vae.load_state_dict(torch.load(vae_model_path))
+# vae.to(device)
 
 # simple autoencoder
 ae_encoder = AutoEncoder.Encoder(in_channels, latent_size)
 ae_decoder = AutoEncoder.Decoder(latent_size)
 ae = AutoEncoder.AutoEncoder(ae_encoder, ae_decoder)
-ae.load_state_dict(torch.load(ae_model_path))
+ae.load_state_dict(torch.load(ae_model_16bit_path, map_location=torch.device('cpu')))
 ae.to(device)
 
 # LSTM 
@@ -54,28 +57,36 @@ dropout = 0.5
 encoder = Encoder(input_size, hidden_size, num_layers, dropout)
 decoder = Decoder(input_size, hidden_size, num_layers, dropout)
 seq2seq = VAESeq2Seq(encoder, decoder, device).to(device)
-seq2seq.load_state_dict(torch.load(aelstm_model_path))
+seq2seq.load_state_dict(torch.load(aelstm_model_16bit_path, map_location=torch.device('cpu')))
 
 
 # Sample data
-data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
-dataset = MovingMNISTDataset(root_dir=data_path, load_type='video',
-                                transform=transforms.Compose([
+# data_path = '/home/yiliyasi/Downloads/mnist_test_seq.npy'
+# dataset = MovingMNISTDataset(root_dir=data_path, load_type='video',
+#                                 transform=transforms.Compose([
+#                                     transforms.Normalize((0.5), (0.5)),
+#                                     # transforms.ToTensor()
+#                                     ])
+#                             )
+# loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
+# video, target = next(iter(loader))
+
+custom_data_path = '/Users/eliyassuleyman/Documents/Work/Repos/MovingMNIST-Generator/data_horizontal'
+cmd = CustomMovingMNISTDataset(custom_data_path, transform=transforms.Compose([
                                     transforms.Normalize((0.5), (0.5)),
-                                    # transforms.ToTensor()
-                                    ])
-                            )
-loader = DataLoader(dataset=dataset, batch_size=1, shuffle=True)
+                                    ]),
+                                    load_type='video')
+loader = DataLoader(dataset=cmd, batch_size=1, shuffle=True)
 video, target = next(iter(loader))
 
 
-mnist_dataset = datasets.MNIST(root='MNISTDATA/', train=False, download=True, transform=transforms.Compose([
-                                    # transforms.Normalize((0.5), (0.5)),
-                                    transforms.ToTensor(),
-                                    transforms.Resize((64, 64))
-                                    ]))
-mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=64, shuffle=True)
-image, _ = next(iter(mnist_loader))
+# mnist_dataset = datasets.MNIST(root='MNISTDATA/', train=False, download=True, transform=transforms.Compose([
+#                                     # transforms.Normalize((0.5), (0.5)),
+#                                     transforms.ToTensor(),
+#                                     transforms.Resize((64, 64))
+#                                     ]))
+# mnist_loader = DataLoader(dataset=mnist_dataset, batch_size=64, shuffle=True)
+# image, _ = next(iter(mnist_loader))
 
 # print(video.shape)
 
@@ -97,7 +108,7 @@ image, _ = next(iter(mnist_loader))
 #         cv2.waitKey(200)
 
 
-# print(video.shape, target[0].shape)
+print(video.shape, target.shape)
 
 video = video.to(device)
 target = target.to(device)
@@ -140,7 +151,7 @@ encoded_train = rearrange(encoded_train, 'b f l -> f b l')
 encoded_target = rearrange(encoded_target, 'b f l -> f b l')
 
 # 10 means it will predict 100 frames, (r * 10)
-range_of_prediction = 2
+range_of_prediction = 10
 
 for r in range(range_of_prediction):
 
@@ -152,7 +163,7 @@ for r in range(range_of_prediction):
         pred_for_infer = pred_for_infer.unsqueeze(0).to(device)
         inference = ae.decoder(pred_for_infer)
         print(inference.shape)
-        predicted_video = torch.cat([ae(video[0]), ae(target[0]), inference])
+        predicted_video = torch.cat([inference])
     else:
         pred = seq2seq(pred)
 

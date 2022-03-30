@@ -55,7 +55,13 @@ class CustomMovingMNISTDataset(Dataset):
                         train_frames[i] = frame
                     else:
                         label_frames[i-10] = frame
+            
+            rand_num = random.randrange(0, 2)
 
+            if rand_num == 0:
+                t = train_frames
+                train_frames = label_frames
+                label_frames = t
 
             return train_frames, label_frames
         else:
@@ -71,7 +77,7 @@ class CustomMovingMNISTDataset(Dataset):
         return image
 
 if __name__ == '__main__':
-    custom_data_path = '/home/yiliyasi/Documents/Projects/Mine/MovingMNIST-Generator/data_horizontal'
+    custom_data_path = '/Users/eliyassuleyman/Documents/Work/Repos/MovingMNIST-Generator/data_horizontal'
     cmd = CustomMovingMNISTDataset(custom_data_path, transform=transforms.Compose([
                                     transforms.Normalize((0.5), (0.5)),
                                     ]),
@@ -80,5 +86,12 @@ if __name__ == '__main__':
     # train, target = cmd.__getitem__(0)
     loader = DataLoader(dataset=cmd, batch_size=10, shuffle=True)
     train, target = next(iter(loader))
+
+    for video in train:
+        for frame in video:
+            cv2.imshow('hehe', rearrange(frame, 'c h w -> h w c').cpu().detach().numpy())
+            cv2.waitKey(150)
+
+
     print(train.shape, target.shape)
 

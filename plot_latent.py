@@ -33,12 +33,12 @@ plt.style.use('seaborn-paper')
 device = torch.device('cpu' if torch.cuda.is_available() else 'cpu')
 
 # Model path
-ae_model_path = 'workingModels/autoencoder_step18000.pth'
+ae_model_path = 'workingModels/ae_trained_with_custom_data_step3000.pth'
 # fine_tuned_model_path = 'SavedModels/fine_tuned_autoencoder_withvideodata__step1500.pth'
 # fine_tuned_model_path = 'SavedModels/autoencoder_step18000.pth'
-vae_model_path = 'SavedModels/vae_step6200.pth'
-vaelstm_model_path = 'SavedModels/vaelstm_step7800.pth'
-aelstm_model_path = 'SavedModels/aelstm_step18000.pth'
+vae_model_path = 'workingModels/vae_step6200.pth'
+vaelstm_model_path = 'workingModels/vaelstm_step7800.pth'
+aelstm_model_path = 'workingModels/aelstm_step77000.pth'
 
 # Simple Movement Batch
 root_path = './simplemovement/*.png'
@@ -52,7 +52,7 @@ for i, path in enumerate(image_paths):
 
 # # variational autoencoder
 in_channels = 1
-latent_size = 128
+latent_size = 16
 # vae = VanillaVAE(in_channels, latent_size)
 # vae.load_state_dict(torch.load(vae_model_path))
 # vae.to(device)
@@ -61,18 +61,18 @@ latent_size = 128
 ae_encoder = AutoEncoder.Encoder(in_channels, latent_size)
 ae_decoder = AutoEncoder.Decoder(latent_size)
 ae = AutoEncoder.AutoEncoder(ae_encoder, ae_decoder)
-ae.load_state_dict(torch.load(ae_model_path))
+ae.load_state_dict(torch.load(ae_model_path, map_location=torch.device('cpu')))
 ae.to(device)
 
 # LSTM 
-input_size = latent_size
-hidden_size = 1024
-num_layers = 2
-dropout = 0.5
-encoder = Encoder(input_size, hidden_size, num_layers, dropout)
-decoder = Decoder(input_size, hidden_size, num_layers, dropout)
-seq2seq = VAESeq2Seq(encoder, decoder, device).to(device)
-seq2seq.load_state_dict(torch.load(aelstm_model_path))
+# input_size = latent_size
+# hidden_size = 1024
+# num_layers = 2
+# dropout = 0.5
+# encoder = Encoder(input_size, hidden_size, num_layers, dropout)
+# decoder = Decoder(input_size, hidden_size, num_layers, dropout)
+# seq2seq = VAESeq2Seq(encoder, decoder, device).to(device)
+# seq2seq.load_state_dict(torch.load(aelstm_model_path, map_location=torch.device('cpu')))
 
 
 # # MovingMNIST
@@ -130,7 +130,6 @@ for b in range(batch):
         '''
         for AE
         '''
-        print(video[b][f].unsqueeze(0).dtype)
         train_frame_latent = ae.encoder(video[b][f].unsqueeze(0))
         # target_frame_latent = ae.encoder(target[b][f].unsqueeze(0))
 
@@ -144,24 +143,39 @@ decoded_train = ae.decoder(encoded_train)
 '''
 ------------------ PLOT ----------------
 '''
-def animate(index):
+# def animate(index):
 
-    y = encoded_train.squeeze(1).detach().numpy()[index]
-    plot = axes[0]
-    plot.cla()
-    plot.plot(y, x)
-    plot.set_xlim([-10, 10])
-    plot.set_ylim([-1, 130])
-    plot.figure.canvas.draw()
+    
+#     print(y)
+#     plot = axes[0]
+#     plot.cla()
+#     plot.plot(y, x)
+#     plot.set_xlim([-10, 10])
+#     plot.set_ylim([0, 25])
+#     plot.figure.canvas.draw()
 
-    image.imshow(tensor2image(decoded_train[index]))
+#     image.imshow(tensor2image(decoded_train[index]))
 
-fig, axes = plt.subplots(1, 2)
-print(fig, axes)
-plot = axes[0]
-image = axes[1]
+fig, axes = plt.subplots(4, 4)
+i = 0
+for row_ofplots in axes:
+    for subplot in row_ofplots:
+        x = encoded_train.squeeze(1).detach().numpy().T[i]
 
-x = numpy.array([x for x in range(128)])
-ani = animation.FuncAnimation(fig, animate, interval=500, frames=frame_len)
+        plot = subplot
+        plot.cla()
+        plot.plot(x)
+        plot.set_xlim([0, 20])
+        plot.set_ylim([-10, 10])
+        plot.figure.canvas.draw()
+        i += 1
 
-# plt.show()
+
+# data = rearrange(encoded_train.squeeze(1), 'f l -> l f')
+
+# print(data[0])
+
+# x = numpy.array([x for x in range(20)])
+# ani = animation.FuncAnimation(fig, animate, interval=1000, frames=frame_len)
+
+plt.show()

@@ -43,20 +43,20 @@ label.pack()
 
 scales = []
 
-for i in range(16):
+for i in range(4):
 
-    for j in range(8):
+    for j in range(4):
 
-        w = Scale(master, from_=0-100.0, to=100.0, orient=HORIZONTAL, command=print_value)
+        w = Scale(master, from_=0-10.0, to=10.0, orient=HORIZONTAL, command=print_value)
         w.grid(row=i, column=j)
         scales.append(w)
 
 # Model path
-ae_model_path = 'workingModels/autoencoder_step18000.pth'
+ae_model_path = 'workingModels/ae_trained_with_custom_data_step3000.pth'
 
 # variational autoencoder
 in_channels = 1
-latent_size = 128
+latent_size = 16
 
 # simple autoencoder
 ae_encoder = AutoEncoder.Encoder(in_channels, latent_size)
